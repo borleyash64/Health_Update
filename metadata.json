@@ -1,0 +1,5 @@
+{
+  "name": "Health Symptom Checker",
+  "description": "A web application that allows users to enter symptoms and get possible health conditions, basic advice, and suggestions on whether they should see a doctor.",
+  "requestFramePermissions": ["geolocation"]
+}
