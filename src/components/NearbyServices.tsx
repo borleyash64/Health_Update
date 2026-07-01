@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { MapPin, Loader2, AlertTriangle, ExternalLink, Star } from 'lucide-react';
+import { MapPin, Pill, Loader2, AlertTriangle, ExternalLink, Star, Stethoscope } from 'lucide-react';
 import { GoogleGenAI } from '@google/genai';
 import Markdown from 'react-markdown';
 import { motion, AnimatePresence } from 'motion/react';
@@ -10,13 +10,14 @@ interface PlaceLink {
   reviewSnippets?: string[];
 }
 
-export function NearbyDoctors() {
+export function NearbyServices() {
+  const [activeSubTab, setActiveSubTab] = useState<'doctors' | 'pharmacies'>('doctors');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [responseMarkdown, setResponseMarkdown] = useState<string>('');
   const [places, setPlaces] = useState<PlaceLink[]>([]);
 
-  const handleFindDoctors = async () => {
+  const handleSearch = async (serviceType: 'doctors' | 'pharmacies') => {
     setIsLoading(true);
     setError(null);
     setResponseMarkdown('');
@@ -34,9 +35,13 @@ export function NearbyDoctors() {
           const { latitude, longitude } = position.coords;
           const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 
+          const prompt = serviceType === 'doctors'
+            ? 'What are the best doctors, clinics, or hospitals nearby? Please provide a brief overview of the top options.'
+            : 'What are the best pharmacies, chemists, or medical stores nearby? Please provide a brief overview of the top options.';
+
           const response = await ai.models.generateContent({
             model: 'gemini-2.5-flash',
-            contents: 'What are the best doctors, clinics, or hospitals nearby? Please provide a brief overview of the top options.',
+            contents: prompt,
             config: {
               tools: [{ googleMaps: {} }],
               toolConfig: {
@@ -68,7 +73,7 @@ export function NearbyDoctors() {
 
           setPlaces(extractedPlaces);
         } catch (err: any) {
-          setError(err.message || 'An error occurred while fetching nearby doctors.');
+          setError(err.message || `An error occurred while fetching nearby ${serviceType === 'doctors' ? 'doctors' : 'medical stores'}.`);
           console.error(err);
         } finally {
           setIsLoading(false);
@@ -84,21 +89,69 @@ export function NearbyDoctors() {
 
   return (
     <div className="space-y-6">
+      {/* Sub-tab Selection */}
+      <div className="flex bg-slate-100 p-1 rounded-xl w-fit mx-auto border border-slate-200 shadow-sm">
+        <button
+          onClick={() => {
+            setActiveSubTab('doctors');
+            setResponseMarkdown('');
+            setPlaces([]);
+            setError(null);
+          }}
+          className={`flex items-center gap-2 px-4 py-2 text-xs font-semibold rounded-lg transition-all ${
+            activeSubTab === 'doctors'
+              ? 'bg-white text-indigo-600 shadow-sm'
+              : 'text-slate-600 hover:text-slate-900'
+          }`}
+        >
+          <Stethoscope className="w-3.5 h-3.5" />
+          Doctors & Clinics
+        </button>
+        <button
+          onClick={() => {
+            setActiveSubTab('pharmacies');
+            setResponseMarkdown('');
+            setPlaces([]);
+            setError(null);
+          }}
+          className={`flex items-center gap-2 px-4 py-2 text-xs font-semibold rounded-lg transition-all ${
+            activeSubTab === 'pharmacies'
+              ? 'bg-white text-emerald-600 shadow-sm'
+              : 'text-slate-600 hover:text-slate-900'
+          }`}
+        >
+          <Pill className="w-3.5 h-3.5" />
+          Pharmacies & Chemists
+        </button>
+      </div>
+
       <div className="bg-white/80 backdrop-blur-sm rounded-3xl shadow-sm border border-white p-6 md:p-8">
         <div className="flex flex-col items-center text-center space-y-4">
-          <div className="w-14 h-14 bg-indigo-50 rounded-2xl flex items-center justify-center text-indigo-600 shadow-sm border border-indigo-100">
-            <MapPin className="w-7 h-7" />
+          <div className={`w-14 h-14 rounded-2xl flex items-center justify-center shadow-sm border ${
+            activeSubTab === 'doctors' 
+              ? 'bg-indigo-50 text-indigo-600 border-indigo-100' 
+              : 'bg-emerald-50 text-emerald-600 border-emerald-100'
+          }`}>
+            {activeSubTab === 'doctors' ? <MapPin className="w-7 h-7" /> : <Pill className="w-7 h-7" />}
           </div>
           <div>
-            <h2 className="text-2xl font-semibold text-slate-900 tracking-tight">Find Nearby Healthcare</h2>
+            <h2 className="text-2xl font-semibold text-slate-900 tracking-tight">
+              {activeSubTab === 'doctors' ? 'Find Nearby Healthcare' : 'Find Nearby Medical Stores'}
+            </h2>
             <p className="text-slate-600 mt-2 max-w-md mx-auto">
-              Discover top-rated doctors, clinics, and hospitals in your immediate area using Google Maps.
+              {activeSubTab === 'doctors' 
+                ? 'Discover top-rated doctors, clinics, and hospitals in your immediate area using Google Maps.'
+                : 'Discover top-rated pharmacies and chemists in your immediate area using Google Maps.'}
             </p>
           </div>
           <button
-            onClick={handleFindDoctors}
+            onClick={() => handleSearch(activeSubTab)}
             disabled={isLoading}
-            className="mt-4 inline-flex items-center justify-center gap-2 px-6 py-3 bg-indigo-600 text-white font-medium rounded-xl hover:bg-indigo-700 transition-all disabled:opacity-70 disabled:cursor-not-allowed shadow-sm hover:shadow-md"
+            className={`mt-4 inline-flex items-center justify-center gap-2 px-6 py-3 text-white font-medium rounded-xl transition-all disabled:opacity-70 disabled:cursor-not-allowed shadow-sm hover:shadow-md ${
+              activeSubTab === 'doctors'
+                ? 'bg-indigo-600 hover:bg-indigo-700'
+                : 'bg-emerald-600 hover:bg-emerald-700'
+            }`}
           >
             {isLoading ? (
               <>
@@ -108,7 +161,7 @@ export function NearbyDoctors() {
             ) : (
               <>
                 <MapPin className="w-5 h-5" />
-                Find Doctors Near Me
+                {activeSubTab === 'doctors' ? 'Find Doctors Near Me' : 'Find Pharmacies Near Me'}
               </>
             )}
           </button>
@@ -138,7 +191,9 @@ export function NearbyDoctors() {
           <div className="lg:col-span-2 space-y-6">
             <div className="bg-white/80 backdrop-blur-sm rounded-3xl shadow-sm border border-white p-6 md:p-8">
               <h3 className="text-xl font-semibold text-slate-900 mb-4 tracking-tight">Overview</h3>
-              <div className="prose prose-slate prose-indigo max-w-none">
+              <div className={`prose prose-slate max-w-none ${
+                activeSubTab === 'doctors' ? 'prose-indigo' : 'prose-emerald'
+              }`}>
                 <Markdown>{responseMarkdown}</Markdown>
               </div>
             </div>
@@ -154,10 +209,18 @@ export function NearbyDoctors() {
                     href={place.uri}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="block bg-white/80 backdrop-blur-sm rounded-2xl border border-white shadow-sm p-5 hover:border-indigo-300 hover:shadow-md hover:-translate-y-1 transition-all duration-300 group"
+                    className={`block bg-white/80 backdrop-blur-sm rounded-2xl border border-white shadow-sm p-5 hover:shadow-md hover:-translate-y-1 transition-all duration-300 group ${
+                      activeSubTab === 'doctors'
+                        ? 'hover:border-indigo-300'
+                        : 'hover:border-emerald-300'
+                    }`}
                   >
                     <div className="flex justify-between items-start gap-2">
-                      <h4 className="font-medium text-slate-900 group-hover:text-indigo-600 transition-colors">
+                      <h4 className={`font-medium text-slate-900 transition-colors ${
+                        activeSubTab === 'doctors'
+                          ? 'group-hover:text-indigo-600'
+                          : 'group-hover:text-emerald-600'
+                      }`}>
                         {place.title || 'Unknown Location'}
                       </h4>
                       <ExternalLink className="w-4 h-4 text-slate-400 shrink-0 mt-0.5" />

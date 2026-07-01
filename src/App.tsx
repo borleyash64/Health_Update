@@ -1,18 +1,21 @@
 import React, { useState } from 'react';
-import { Activity, AlertTriangle, Info, MapPin, Stethoscope, Pill, Search } from 'lucide-react';
+import { Activity, AlertTriangle, Info, MapPin, Stethoscope, Pill, Search, MessageSquare, Calendar, Calculator, HeartHandshake } from 'lucide-react';
 import { SymptomInput } from './components/SymptomInput';
 import { ResultCard } from './components/ResultCard';
 import { HealthTips } from './components/HealthTips';
-import { NearbyDoctors } from './components/NearbyDoctors';
-import { NearbyMedicalStores } from './components/NearbyMedicalStores';
 import { MedicineInfo } from './components/MedicineInfo';
+import { HealthAssistantChat } from './components/HealthAssistantChat';
+import { MedicationTracker } from './components/MedicationTracker';
+import { HealthCalculators } from './components/HealthCalculators';
+import { FirstAidGuides } from './components/FirstAidGuides';
+import { NearbyServices } from './components/NearbyServices';
 import { Condition } from './types';
 import { motion, AnimatePresence } from 'motion/react';
 import { GoogleGenAI, Type } from '@google/genai';
 import clsx from 'clsx';
 
 export default function App() {
-  const [activeTab, setActiveTab] = useState<'symptoms' | 'medicine' | 'doctors' | 'pharmacies'>('symptoms');
+  const [activeTab, setActiveTab] = useState<'symptoms' | 'assistant' | 'medicine' | 'tracker' | 'calculators' | 'firstaid' | 'nearby'>('symptoms');
   const [conditions, setConditions] = useState<Condition[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -112,58 +115,90 @@ export default function App() {
         </div>
 
         {/* Tabs */}
-        <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2 bg-white/60 backdrop-blur-md p-1.5 rounded-2xl w-full max-w-4xl mx-auto shadow-sm border border-white/50">
+        <div className="flex flex-row overflow-x-auto gap-1 bg-white/60 backdrop-blur-md p-1.5 rounded-2xl w-full max-w-5xl mx-auto shadow-sm border border-white/50 scrollbar-none select-none">
           <button
             onClick={() => setActiveTab('symptoms')}
             className={clsx(
-              'flex-1 flex items-center justify-center gap-2 py-2.5 px-3 text-sm font-medium rounded-lg transition-all',
+              'flex-1 flex items-center justify-center gap-2 py-2.5 px-4 text-xs font-semibold rounded-xl transition-all shrink-0 cursor-pointer',
               activeTab === 'symptoms'
                 ? 'bg-white text-indigo-600 shadow-sm'
-                : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/50'
+                : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/30'
             )}
           >
-            <Stethoscope className="w-4 h-4" />
-            <span className="hidden md:inline">Symptom Checker</span>
-            <span className="md:hidden">Symptoms</span>
+            <Stethoscope className="w-4 h-4 shrink-0" />
+            <span>Symptom Checker</span>
+          </button>
+          <button
+            onClick={() => setActiveTab('assistant')}
+            className={clsx(
+              'flex-1 flex items-center justify-center gap-2 py-2.5 px-4 text-xs font-semibold rounded-xl transition-all shrink-0 cursor-pointer',
+              activeTab === 'assistant'
+                ? 'bg-white text-indigo-600 shadow-sm'
+                : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/30'
+            )}
+          >
+            <MessageSquare className="w-4 h-4 shrink-0" />
+            <span>AI Assistant</span>
           </button>
           <button
             onClick={() => setActiveTab('medicine')}
             className={clsx(
-              'flex-1 flex items-center justify-center gap-2 py-2.5 px-3 text-sm font-medium rounded-lg transition-all',
+              'flex-1 flex items-center justify-center gap-2 py-2.5 px-4 text-xs font-semibold rounded-xl transition-all shrink-0 cursor-pointer',
               activeTab === 'medicine'
                 ? 'bg-white text-blue-600 shadow-sm'
-                : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/50'
+                : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/30'
             )}
           >
-            <Search className="w-4 h-4" />
-            <span className="hidden md:inline">Medicine Info</span>
-            <span className="md:hidden">Medicine</span>
+            <Search className="w-4 h-4 shrink-0" />
+            <span>Medicine Info</span>
           </button>
           <button
-            onClick={() => setActiveTab('doctors')}
+            onClick={() => setActiveTab('tracker')}
             className={clsx(
-              'flex-1 flex items-center justify-center gap-2 py-2.5 px-3 text-sm font-medium rounded-lg transition-all',
-              activeTab === 'doctors'
+              'flex-1 flex items-center justify-center gap-2 py-2.5 px-4 text-xs font-semibold rounded-xl transition-all shrink-0 cursor-pointer',
+              activeTab === 'tracker'
+                ? 'bg-white text-blue-600 shadow-sm'
+                : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/30'
+            )}
+          >
+            <Calendar className="w-4 h-4 shrink-0" />
+            <span>Med Tracker</span>
+          </button>
+          <button
+            onClick={() => setActiveTab('calculators')}
+            className={clsx(
+              'flex-1 flex items-center justify-center gap-2 py-2.5 px-4 text-xs font-semibold rounded-xl transition-all shrink-0 cursor-pointer',
+              activeTab === 'calculators'
                 ? 'bg-white text-indigo-600 shadow-sm'
-                : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/50'
+                : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/30'
             )}
           >
-            <MapPin className="w-4 h-4" />
-            <span className="hidden md:inline">Nearby Doctors</span>
-            <span className="md:hidden">Doctors</span>
+            <Calculator className="w-4 h-4 shrink-0" />
+            <span>Calculators</span>
           </button>
           <button
-            onClick={() => setActiveTab('pharmacies')}
+            onClick={() => setActiveTab('firstaid')}
             className={clsx(
-              'flex-1 flex items-center justify-center gap-2 py-2.5 px-3 text-sm font-medium rounded-lg transition-all',
-              activeTab === 'pharmacies'
-                ? 'bg-white text-emerald-600 shadow-sm'
-                : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/50'
+              'flex-1 flex items-center justify-center gap-2 py-2.5 px-4 text-xs font-semibold rounded-xl transition-all shrink-0 cursor-pointer',
+              activeTab === 'firstaid'
+                ? 'bg-white text-rose-600 shadow-sm'
+                : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/30'
             )}
           >
-            <Pill className="w-4 h-4" />
-            <span className="hidden md:inline">Nearby Pharmacies</span>
-            <span className="md:hidden">Pharmacies</span>
+            <HeartHandshake className="w-4 h-4 shrink-0" />
+            <span>First Aid</span>
+          </button>
+          <button
+            onClick={() => setActiveTab('nearby')}
+            className={clsx(
+              'flex-1 flex items-center justify-center gap-2 py-2.5 px-4 text-xs font-semibold rounded-xl transition-all shrink-0 cursor-pointer',
+              activeTab === 'nearby'
+                ? 'bg-white text-teal-600 shadow-sm'
+                : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/30'
+            )}
+          >
+            <MapPin className="w-4 h-4 shrink-0" />
+            <span>Nearby Services</span>
           </button>
         </div>
 
@@ -225,12 +260,18 @@ export default function App() {
                   <HealthTips />
                 </div>
               </div>
+            ) : activeTab === 'assistant' ? (
+              <HealthAssistantChat />
             ) : activeTab === 'medicine' ? (
               <MedicineInfo />
-            ) : activeTab === 'doctors' ? (
-              <NearbyDoctors />
+            ) : activeTab === 'tracker' ? (
+              <MedicationTracker />
+            ) : activeTab === 'calculators' ? (
+              <HealthCalculators />
+            ) : activeTab === 'firstaid' ? (
+              <FirstAidGuides />
             ) : (
-              <NearbyMedicalStores />
+              <NearbyServices />
             )}
           </motion.div>
         </AnimatePresence>
