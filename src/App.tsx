@@ -276,6 +276,12 @@ export default function App() {
           </motion.div>
         </AnimatePresence>
       </main>
+
+      {/* Footer */}
+      <footer className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8 border-t border-slate-200/40 text-center text-slate-500 text-xs relative z-10">
+        <p>© 2026 Health Update. Released under the MIT License.</p>
+        <p className="mt-1 text-slate-400 font-medium">Made by Yash Borle</p>
+      </footer>
     </div>
   );
 }
